@@ -2,6 +2,7 @@ import type { ErrorRequestHandler } from 'express';
 
 const serviceErrorToStatusCode = {
   unauthorized: 401,
+  forbidden: 403,
   notFound: 404,
   conflict: 409,
   unprocessableEntity: 422,
@@ -21,6 +22,10 @@ export function notFoundError(message: string) {
 
 export function unprocessableEntity(message: string) {
   return { type: 'unprocessableEntity', message };
+}
+
+export function forbiddenError(message: string) {
+  return { type: 'forbidden', message };
 }
 
 const errorHandler: ErrorRequestHandler = (error, req, res, next) => {

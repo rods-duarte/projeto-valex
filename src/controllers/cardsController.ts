@@ -1,50 +1,40 @@
 import { Request, Response } from 'express';
 // services
-import {
-  getEmployee,
-  validateEmployeeCard,
-} from '../services/employeeService.js';
-import { getCompany } from '../services/companyService.js';
+import * as cardsService from '../services/cardsService.js';
+import * as employeeService from '../services/employeeService.js';
+import * as companyService from '../services/companyService.js';
 // middlewares
-import {
-  unauthorizedError,
-  unprocessableEntity,
-} from '../middlewares/errorHandlerMiddleware.js';
+import * as errorHandler from '../middlewares/errorHandlerMiddleware.js';
 // types
 import { TransactionTypes } from '../repositories/cardRepository.js';
-import {
-  formatCardName,
-  generateCardData,
-  registerNewCard,
-} from '../services/cardsService.js';
 
 export async function createCard(req: Request, res: Response) {
-  const employeeId: number = +req.params.id;
+  const employeeId: number = +req.params.employeeId;
   const apiKey = req.header('x-api-key');
   const { cardType }: { cardType: TransactionTypes } = req.body;
 
   if (!apiKey) {
     const message = 'Missing api key !';
-    throw unprocessableEntity(message);
+    throw errorHandler.unprocessableEntity(message);
   }
   if (!employeeId) {
     const message = 'Missing employee id !';
-    throw unprocessableEntity(message);
+    throw errorHandler.unprocessableEntity(message);
   }
 
-  const company = await getCompany(apiKey);
-  const employee = await getEmployee(employeeId);
+  const company = await companyService.getCompany(apiKey);
+  const employee = await employeeService.getEmployee(employeeId);
 
   if (employee.companyId !== company.id) {
     const message = `Employee ${employee.fullName} is not registered in the ${company.name} company !`;
-    throw unauthorizedError(message);
+    throw errorHandler.unauthorizedError(message);
   }
 
-  await validateEmployeeCard(cardType, employee);
+  await employeeService.validateEmployeeCard(cardType, employee);
 
-  const cardholderName = formatCardName(employee.fullName);
+  const cardholderName = cardsService.formatCardName(employee.fullName);
   const card = {
-    ...generateCardData(),
+    ...cardsService.generateCardData(),
     cardholderName,
     type: cardType,
     employeeId,
@@ -52,7 +42,19 @@ export async function createCard(req: Request, res: Response) {
     isBlocked: false,
   };
 
-  registerNewCard(card);
+  cardsService.registerNewCard(card);
 
   res.send({ card });
+}
+
+export async function activateCard(req: Request, res: Response) {
+  const cardId = +req.params.id;
+  const { securityCode, password } = req.body;
+
+  const card = await cardsService.getCard(cardId);
+  cardsService.isCardValid(card);
+  cardsService.validateSecurityCode(card, securityCode);
+  await cardsService.registerCardPassword(card, password);
+
+  res.status(200).send('Card activated successfully !');
 }

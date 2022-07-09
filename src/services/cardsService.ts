@@ -1,7 +1,13 @@
 import { faker } from '@faker-js/faker';
 import Cryptr from 'cryptr';
 import dayjs from 'dayjs';
+import {
+  forbiddenError,
+  notFoundError,
+  unauthorizedError,
+} from '../middlewares/errorHandlerMiddleware.js';
 import * as cardRepository from '../repositories/cardRepository.js';
+import { Card } from '../repositories/cardRepository.js';
 
 export function formatCardName(fullName: string) {
   const regex = /\b[A-Z].*?\b/g;
@@ -20,6 +26,7 @@ export function generateCardData() {
 
   const number = faker.finance.creditCardNumber();
   const securityCode = faker.finance.creditCardCVV();
+  console.log(securityCode);
   const encryptedSecurityCode = cryptr.encrypt(securityCode);
   const expirationDate = dayjs().add(5, 'year').format('MM/YY');
 
@@ -32,4 +39,52 @@ export function generateCardData() {
 
 export async function registerNewCard(card: any) {
   await cardRepository.insert(card);
+}
+
+export async function getCard(id: number) {
+  if (!id) {
+    const message = 'Id must be a number !';
+    throw notFoundError(message);
+  }
+
+  const card = await cardRepository.findById(id);
+
+  if (!card) {
+    const message = 'Card not found !';
+    throw notFoundError(message);
+  }
+
+  return card;
+}
+
+export function validateSecurityCode(card: Card, securityCode: string) {
+  const cryptr = new Cryptr(process.env.SECRET_KEY);
+  const CardSecurityCode = cryptr.decrypt(card.securityCode);
+
+  if (securityCode !== CardSecurityCode) {
+    const message = 'Invalid security code !';
+    throw unauthorizedError(message);
+  }
+}
+
+export function isCardValid(card: Card) {
+  const [todayMonth, todayYear] = dayjs().format('MM/YY').split('/');
+  const [expMonth, expYear] = card.expirationDate.split('/');
+
+  if (todayYear > expYear || (todayYear === expYear && todayMonth > expMonth)) {
+    const message = 'Card expired !';
+    throw forbiddenError(message);
+  }
+}
+
+export async function registerCardPassword(card: Card, password: string) {
+  const cryptr = new Cryptr(process.env.SECRET_KEY);
+  if (card.password !== null) {
+    const message = 'Card has already been activated !';
+    throw forbiddenError(message);
+  }
+
+  const cryptedPassword = cryptr.encrypt(password);
+
+  await cardRepository.update(card.id, { password: cryptedPassword });
 }
