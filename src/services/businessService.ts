@@ -1,4 +1,4 @@
-import { notFoundError } from '../middlewares/errorHandlerMiddleware';
+import { notFoundError } from '../middlewares/errorHandlerMiddleware.js';
 import * as businessRepository from '../repositories/businessRepository.js';
 
 export async function getBusiness(id: number) {
@@ -7,7 +7,7 @@ export async function getBusiness(id: number) {
     throw notFoundError(message);
   }
 
-  const business = businessRepository.findById(id);
+  const business = await businessRepository.findById(id);
 
   if (!business) {
     const message = `Business with id ${id} not found !`;

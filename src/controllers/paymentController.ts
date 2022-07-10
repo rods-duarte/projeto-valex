@@ -6,14 +6,15 @@ import { unauthorizedError } from '../middlewares/errorHandlerMiddleware.js';
 
 export async function payment(req: Request, res: Response) {
   const cardId = +req.params.id;
-  const { password, amount, businessId } = req.body;
+  const { cardPassword, amount, businessId } = req.body;
 
   const business = await businessService.getBusiness(businessId);
   const card = await cardService.getCard(cardId);
 
   cardService.isCardBlocked(card);
   cardService.isCardValid(card);
-  cardService.validatePassword(card, password);
+  cardService.isCardActivated(card);
+  cardService.validatePassword(card, cardPassword);
   transactionService.validateCardType(card, business);
 
   const recharges = await transactionService.getRecharges(cardId);

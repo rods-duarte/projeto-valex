@@ -64,6 +64,10 @@ export async function registerPayment(
   });
 }
 
+export async function registerRecharge(card: Card, amount: number) {
+  await rechargeRepository.insert({ cardId: card.id, amount });
+}
+
 export function validateCardType(card: Card, business: Business) {
   if (card.type !== business.type) {
     const message = `Card is not allowed to do ${business.type} transaction type`;

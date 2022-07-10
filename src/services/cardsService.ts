@@ -27,7 +27,6 @@ export function generateCardData() {
 
   const number = faker.finance.creditCardNumber();
   const securityCode = faker.finance.creditCardCVV();
-  console.log(securityCode);
   const encryptedSecurityCode = cryptr.encrypt(securityCode);
   const expirationDate = dayjs().add(5, 'year').format('MM/YY');
 
@@ -72,11 +71,6 @@ export function validatePassword(card: Card, password: string) {
   const cryptr = new Cryptr(process.env.SECRET_KEY);
   const cardPassword = cryptr.decrypt(card.password);
 
-  if (cardPassword === null) {
-    const message = 'Card not activated !';
-    throw unauthorizedError(message);
-  }
-
   if (password !== cardPassword) {
     const message = 'Wrong password !';
     throw unauthorizedError(message);
@@ -97,6 +91,13 @@ export function isCardBlocked(card: Card) {
   if (card.isBlocked) {
     const message = 'Card is already blocked';
     throw conflictError(message);
+  }
+}
+
+export function isCardActivated(card: Card) {
+  if (card.password === null) {
+    const message = 'Card not activated !';
+    throw unauthorizedError(message);
   }
 }
 
