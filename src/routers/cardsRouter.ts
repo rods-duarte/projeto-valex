@@ -2,14 +2,16 @@ import { Router } from 'express';
 // controllers
 import {
   activateCard,
+  blockCard,
   createCard,
   getTransactions,
+  unblockCard,
 } from '../controllers/cardsController.js';
 // middlewares
 import { validateSchema } from '../middlewares/schemaValidateMiddleware.js';
 // schemas
 import CardTypeSchema from '../models/cardTypeSchema.js';
-import cardAuthSchema from '../models/cardAuthSchema.js';
+import cardPasswordSchema from '../models/cardPasswordSchema.js';
 
 const cardsRouter = Router();
 cardsRouter.post(
@@ -19,8 +21,18 @@ cardsRouter.post(
 );
 cardsRouter.put(
   '/cards/:id/activate/',
-  validateSchema(cardAuthSchema),
+  validateSchema(cardPasswordSchema),
   activateCard
+);
+cardsRouter.put(
+  '/cards/:id/block',
+  validateSchema(cardPasswordSchema),
+  blockCard
+);
+cardsRouter.put(
+  '/cards/:id/unblock',
+  validateSchema(cardPasswordSchema),
+  unblockCard
 );
 cardsRouter.get('/cards/:id/transactions', getTransactions);
 

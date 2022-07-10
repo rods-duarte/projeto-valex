@@ -87,6 +87,11 @@ export function isCardValid(card: Card) {
   }
 }
 
+export async function toggleBlockCard(card: Card) {
+  const { id, isBlocked } = card;
+  await cardRepository.update(id, { isBlocked: !isBlocked });
+}
+
 export async function registerCardPassword(card: Card, password: string) {
   const cryptr = new Cryptr(process.env.SECRET_KEY);
   if (card.password !== null) {

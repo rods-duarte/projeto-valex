@@ -50,6 +50,40 @@ export async function activateCard(req: Request, res: Response) {
   res.status(200).send('Card activated successfully !');
 }
 
+export async function blockCard(req: Request, res: Response) {
+  const cardId = +req.params.id;
+  const { password } = req.body;
+
+  const card = await cardsService.getCard(cardId);
+  cardsService.validatePassword(card, password);
+
+  if (card.isBlocked) {
+    const message = 'Card is already blocked';
+    throw errorHandler.conflictError(message);
+  }
+
+  cardsService.isCardValid(card);
+  await cardsService.toggleBlockCard(card);
+  res.status(200).send(`Card ${card.number} blocked successfully`);
+}
+
+export async function unblockCard(req: Request, res: Response) {
+  const cardId = +req.params.id;
+  const { password } = req.body;
+
+  const card = await cardsService.getCard(cardId);
+  cardsService.validatePassword(card, password);
+
+  if (!card.isBlocked) {
+    const message = 'Card is already unblocked';
+    throw errorHandler.conflictError(message);
+  }
+
+  cardsService.isCardValid(card);
+  await cardsService.toggleBlockCard(card);
+  res.status(200).send(`Card ${card.number} unblocked successfully`);
+}
+
 export async function getTransactions(req: Request, res: Response) {
   const cardId = +req.params.id;
 
