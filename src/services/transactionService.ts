@@ -40,8 +40,8 @@ export function calculateBalance(
   recharges: Recharge[],
   payments: PaymentWithBusinessName[]
 ) {
-  const income = payments.reduce((acc, payment) => acc + payment.amount, 0);
-  const expense = recharges.reduce((acc, recharge) => acc + recharge.amount, 0);
+  const income = recharges.reduce((acc, recharge) => acc + recharge.amount, 0);
+  const expense = payments.reduce((acc, payment) => acc + payment.amount, 0);
 
   const balance = income - expense;
   return balance;
