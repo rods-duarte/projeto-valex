@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import * as cardsService from '../services/cardsService.js';
 import * as employeeService from '../services/employeeService.js';
 import * as companyService from '../services/companyService.js';
+import * as transactionService from '../services/transactionService.js';
 // middlewares
 import * as errorHandler from '../middlewares/errorHandlerMiddleware.js';
 // types
@@ -12,15 +13,6 @@ export async function createCard(req: Request, res: Response) {
   const employeeId: number = +req.params.employeeId;
   const apiKey = req.header('x-api-key');
   const { cardType }: { cardType: TransactionTypes } = req.body;
-
-  if (!apiKey) {
-    const message = 'Missing api key !';
-    throw errorHandler.unprocessableEntity(message);
-  }
-  if (!employeeId) {
-    const message = 'Missing employee id !';
-    throw errorHandler.unprocessableEntity(message);
-  }
 
   const company = await companyService.getCompany(apiKey);
   const employee = await employeeService.getEmployee(employeeId);
@@ -36,14 +28,13 @@ export async function createCard(req: Request, res: Response) {
   const card = {
     ...cardsService.generateCardData(),
     cardholderName,
-    type: cardType,
     employeeId,
+    type: cardType,
     isVirtual: false,
     isBlocked: false,
   };
 
-  cardsService.registerNewCard(card);
-
+  await cardsService.registerNewCard(card);
   res.send({ card });
 }
 
@@ -57,4 +48,17 @@ export async function activateCard(req: Request, res: Response) {
   await cardsService.registerCardPassword(card, password);
 
   res.status(200).send('Card activated successfully !');
+}
+
+export async function getTransactions(req: Request, res: Response) {
+  const cardId = +req.params.id;
+
+  await cardsService.getCard(cardId);
+
+  const recharges = await transactionService.getRecharges(cardId);
+  const payments = await transactionService.getPayments(cardId);
+  const balance = transactionService.calculateBalance(recharges, payments);
+
+  const response = { balance, recharges, payments };
+  res.status(200).send(response);
 }

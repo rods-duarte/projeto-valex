@@ -1,6 +1,10 @@
 import { Router } from 'express';
 // controllers
-import { activateCard, createCard } from '../controllers/cardsController.js';
+import {
+  activateCard,
+  createCard,
+  getTransactions,
+} from '../controllers/cardsController.js';
 // middlewares
 import { validateSchema } from '../middlewares/schemaValidateMiddleware.js';
 // schemas
@@ -9,14 +13,15 @@ import cardAuthSchema from '../models/cardAuthSchema.js';
 
 const cardsRouter = Router();
 cardsRouter.post(
-  '/cards/:employeeId',
+  '/cards/new/:employeeId',
   validateSchema(CardTypeSchema),
   createCard
 );
 cardsRouter.put(
-  '/cards/activate/:id',
+  '/cards/:id/activate/',
   validateSchema(cardAuthSchema),
   activateCard
 );
+cardsRouter.get('/cards/:id/transactions', getTransactions);
 
 export default cardsRouter;

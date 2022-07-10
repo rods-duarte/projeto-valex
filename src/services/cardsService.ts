@@ -67,6 +67,16 @@ export function validateSecurityCode(card: Card, securityCode: string) {
   }
 }
 
+export function validatePassword(card: Card, password: string) {
+  const cryptr = new Cryptr(process.env.SECRET_KEY);
+  const cardPassword = cryptr.decrypt(card.password);
+
+  if (password !== cardPassword) {
+    const message = 'Wrong password !';
+    throw unauthorizedError(message);
+  }
+}
+
 export function isCardValid(card: Card) {
   const [todayMonth, todayYear] = dayjs().format('MM/YY').split('/');
   const [expMonth, expYear] = card.expirationDate.split('/');

@@ -8,6 +8,11 @@ import { TransactionTypes } from '../repositories/cardRepository.js';
 import { Employee } from '../repositories/employeeRepository.js';
 
 export async function getEmployee(id: number) {
+  if (!id) {
+    const message = 'Missing employee id !';
+    throw notFoundError(message);
+  }
+
   const employee = await employeeRepository.findById(id);
   if (!employee) {
     const message = 'Employee not found !';
