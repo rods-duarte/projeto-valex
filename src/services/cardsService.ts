@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import Cryptr from 'cryptr';
 import dayjs from 'dayjs';
 import {
+  conflictError,
   forbiddenError,
   notFoundError,
   unauthorizedError,
@@ -71,6 +72,11 @@ export function validatePassword(card: Card, password: string) {
   const cryptr = new Cryptr(process.env.SECRET_KEY);
   const cardPassword = cryptr.decrypt(card.password);
 
+  if (cardPassword === null) {
+    const message = 'Card not activated !';
+    throw unauthorizedError(message);
+  }
+
   if (password !== cardPassword) {
     const message = 'Wrong password !';
     throw unauthorizedError(message);
@@ -84,6 +90,13 @@ export function isCardValid(card: Card) {
   if (todayYear > expYear || (todayYear === expYear && todayMonth > expMonth)) {
     const message = 'Card expired !';
     throw forbiddenError(message);
+  }
+}
+
+export function isCardBlocked(card: Card) {
+  if (card.isBlocked) {
+    const message = 'Card is already blocked';
+    throw conflictError(message);
   }
 }
 

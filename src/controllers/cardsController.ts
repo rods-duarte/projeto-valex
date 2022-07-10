@@ -55,12 +55,8 @@ export async function blockCard(req: Request, res: Response) {
   const { password } = req.body;
 
   const card = await cardsService.getCard(cardId);
+  cardsService.isCardBlocked(card);
   cardsService.validatePassword(card, password);
-
-  if (card.isBlocked) {
-    const message = 'Card is already blocked';
-    throw errorHandler.conflictError(message);
-  }
 
   cardsService.isCardValid(card);
   await cardsService.toggleBlockCard(card);

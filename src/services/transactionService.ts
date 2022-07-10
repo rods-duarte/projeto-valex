@@ -1,12 +1,17 @@
 import * as rechargeRepository from '../repositories/rechargeRepository.js';
 import * as paymentRepository from '../repositories/paymentRepository.js';
-import { notFoundError } from '../middlewares/errorHandlerMiddleware.js';
+import {
+  notFoundError,
+  unauthorizedError,
+} from '../middlewares/errorHandlerMiddleware.js';
 import { Recharge } from '../repositories/rechargeRepository.js';
 import { PaymentWithBusinessName } from '../repositories/paymentRepository.js';
+import { Card } from '../repositories/cardRepository.js';
+import { Business } from '../repositories/businessRepository.js';
 
 export async function getRecharges(cardId: number) {
   if (!cardId) {
-    const message = 'Id must be a number !';
+    const message = 'Card id must be a number !';
     throw notFoundError(message);
   }
 
@@ -45,4 +50,23 @@ export function calculateBalance(
 
   const balance = income - expense;
   return balance;
+}
+
+export async function registerPayment(
+  card: Card,
+  business: Business,
+  amount: number
+) {
+  await paymentRepository.insert({
+    cardId: card.id,
+    businessId: business.id,
+    amount,
+  });
+}
+
+export function validateCardType(card: Card, business: Business) {
+  if (card.type !== business.type) {
+    const message = `Card is not allowed to do ${business.type} transaction type`;
+    throw unauthorizedError(message);
+  }
 }
