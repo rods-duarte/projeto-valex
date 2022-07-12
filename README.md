@@ -74,3 +74,11 @@ API:
       }
      
 ```
+
+## Technologies
+The following tools and frameworks were used in the construction of the project:<br>
+<p>
+  <img style='margin: 5px;' src='https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white'>
+  <img style='margin: 5px;' src='https://img.shields.io/badge/Express.js-404D59?style=for-the-badge'>
+  <img style='margin: 5px;' src='https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white'>
+</p>
